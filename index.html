@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f70505">
+<title>Tutorial – Sistema de Suprimentos | Hiper.Farma</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap');
+
+  :root {
+    --red:       #f70505;
+    --red-dark:  #9B0C22;
+    --red-light: #F5E6E9;
+    --red-mid:   #E8C0C8;
+    --white:     #FFFFFF;
+    --off-white: #FDF8F8;
+    --gray-100:  #F5F5F5;
+    --gray-300:  #D1D1D1;
+    --gray-500:  #7A7A7A;
+    --gray-800:  #222222;
+    --shadow-sm: 0 2px 8px rgba(200,16,46,.10);
+    --shadow-md: 0 6px 24px rgba(200,16,46,.15);
+    --header-h: 58px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-h) + 12px); }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--off-white);
+    color: var(--gray-800);
+    line-height: 1.6;
+    overflow-x: hidden;
+    width: 100%;
+  }
+  img, video { max-width: 100%; height: auto; }
+
+  /* HEADER */
+  header {
+    background: var(--white);
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: var(--header-h);
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    box-shadow: 0 2px 12px rgba(0,0,0,.12);
+    transition: transform .3s ease;
+  }
+  header.header-hidden { transform: translateY(-100%); }
+  .logo { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .logo img { height: 32px; width: auto; flex-shrink: 0; }
+  .logo-text { font-family: 'Syne', sans-serif; font-size: 1.05rem; color: var(--red); font-weight: 800; letter-spacing: -.3px; white-space: nowrap; }
+  .logo-text span { opacity: .75; font-weight: 700; }
+
+  /* MOBILE NAV TOGGLE */
+  .nav-toggle {
+    display: flex;
+    align-items: center; justify-content: center;
+    width: 40px; height: 40px;
+    background: var(--red-light);
+    border: none; border-radius: 10px;
+    flex-shrink: 0;
+  }
+  .nav-toggle svg { width: 20px; height: 20px; stroke: var(--red); }
+
+  nav {
+    position: fixed;
+    top: var(--header-h);
+    left: 0; right: 0;
+    background: var(--white);
+    display: flex;
+    flex-direction: column;
+    padding: 8px 0;
+    box-shadow: 0 8px 20px rgba(0,0,0,.12);
+    transform: translateY(-8px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .2s ease, transform .2s ease, visibility .2s;
+    z-index: 199;
+  }
+  nav.nav-open { opacity: 1; transform: translateY(0); visibility: visible; }
+  nav a {
+    color: var(--gray-800);
+    text-decoration: none;
+    font-size: .95rem; font-weight: 600;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--gray-100);
+    display: flex; align-items: center; gap: 10px;
+  }
+  nav a:last-child { border-bottom: none; }
+  nav a .nav-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--red-light); color: var(--red);
+    font-size: .72rem; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .nav-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.35);
+    z-index: 198;
+    opacity: 0; visibility: hidden;
+    transition: opacity .2s ease, visibility .2s;
+  }
+  .nav-backdrop.show { opacity: 1; visibility: visible; }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, var(--red-dark) 0%, var(--red) 60%, #E83050 100%);
+    padding: 36px 18px 44px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(255,255,255,.18);
+    border: 1px solid rgba(255,255,255,.3);
+    color: var(--white);
+    font-size: .68rem; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase;
+    padding: 5px 14px; border-radius: 100px; margin-bottom: 16px;
+    position: relative;
+  }
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.6rem, 7vw, 2.1rem);
+    font-weight: 800; color: var(--white); line-height: 1.18;
+    margin-bottom: 14px; max-width: 420px; margin-inline: auto;
+    position: relative;
+  }
+  .hero p { color: rgba(255,255,255,.88); font-size: .92rem; max-width: 380px; margin-inline: auto; margin-bottom: 26px; position: relative; }
+  .hero-cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--white); color: var(--red);
+    font-weight: 700; font-size: .9rem;
+    padding: 13px 26px; border-radius: 100px; text-decoration: none;
+    box-shadow: 0 4px 16px rgba(0,0,0,.2);
+    position: relative;
+    width: 100%; max-width: 280px; justify-content: center;
+  }
+  .steps-overview {
+    display: flex; justify-content: flex-start; gap: 8px; margin-top: 28px;
+    overflow-x: auto; padding: 4px 4px 8px; -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    position: relative;
+  }
+  .steps-overview::-webkit-scrollbar { display: none; }
+  .step-pill {
+    background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25);
+    color: var(--white); font-size: .75rem; font-weight: 600;
+    padding: 7px 14px; border-radius: 100px;
+    display: flex; align-items: center; gap: 7px;
+    white-space: nowrap; flex-shrink: 0;
+    scroll-snap-align: start;
+  }
+  .step-pill .num {
+    background: var(--white); color: var(--red);
+    width: 17px; height: 17px; border-radius: 50%;
+    font-size: .65rem; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* MAIN */
+  main { width: 100%; margin-inline: auto; padding: 36px 14px 48px; }
+  .section-label { text-align: center; font-size: .7rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--red); margin-bottom: 6px; }
+  .section-title { text-align: center; font-family: 'Syne', sans-serif; font-size: clamp(1.3rem, 5.5vw, 1.7rem); font-weight: 800; color: var(--gray-800); margin-bottom: 30px; padding: 0 6px; }
+
+  /* PROGRESS — horizontal scroll on mobile */
+  .progress-bar {
+    display: flex; align-items: flex-start;
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+    padding: 4px 4px 14px; margin-bottom: 8px;
+    scroll-snap-type: x proximity;
+  }
+  .progress-bar::-webkit-scrollbar { display: none; }
+  .prog-step { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; width: 76px; scroll-snap-align: start; }
+  .prog-dot {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--red); color: var(--white);
+    font-weight: 800; font-size: .8rem;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: var(--shadow-sm);
+    flex-shrink: 0;
+  }
+  .prog-label { font-size: .68rem; font-weight: 600; color: var(--gray-800); text-align: center; line-height: 1.25; }
+  .prog-connector { display: flex; align-items: center; height: 32px; flex-shrink: 0; width: 24px; }
+  .prog-line { width: 100%; height: 3px; background: linear-gradient(90deg, var(--red), var(--red-mid)); border-radius: 2px; }
+
+  /* STEP CARD */
+  .step-card {
+    background: var(--white); border-radius: 16px;
+    box-shadow: var(--shadow-sm); margin-bottom: 22px;
+    overflow: hidden; border: 1.5px solid var(--red-mid);
+    scroll-margin-top: calc(var(--header-h) + 10px);
+  }
+  .step-header {
+    background: linear-gradient(90deg, var(--red) 0%, var(--red-dark) 100%);
+    padding: 16px 18px; display: flex; align-items: center; gap: 12px;
+  }
+  .step-number {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--white); color: var(--red);
+    font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,.2);
+  }
+  .step-title { color: var(--white); font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 800; line-height: 1.25; }
+  .step-subtitle { color: rgba(255,255,255,.78); font-size: .76rem; margin-top: 2px; }
+
+  /* On mobile, video first then text — better for tutorial flow */
+  .step-body { display: flex; flex-direction: column; }
+  /* Passos 4 e 5 no original usavam grid-template-columns:1fr (coluna única,
+     texto em cima, vídeo embaixo, ambos ocupando a largura toda do card) —
+     é o que permite ao vídeo ter width:1000px sem espremer o texto. */
+  .step-body.stacked { flex-direction: column; }
+  .step-text { padding: 20px 18px; border-bottom: none; order: 2; }
+  .step-text p { font-size: .9rem; color: var(--gray-800); line-height: 1.65; margin-bottom: 14px; }
+  .step-text p:last-child { margin-bottom: 0; }
+  .step-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--red); font-weight: 600; font-size: .88rem;
+    text-decoration: none; border-bottom: 2px solid var(--red-mid);
+    padding-bottom: 2px;
+  }
+  .tip-box {
+    background: var(--red-light); border-left: 4px solid var(--red);
+    border-radius: 0 8px 8px 0; padding: 11px 14px; margin-top: 14px;
+    font-size: .82rem; color: var(--red-dark); font-weight: 500;
+  }
+  .tip-box strong { font-weight: 700; }
+  .checklist { list-style: none; margin-top: 10px; display: flex; flex-direction: column; gap: 9px; }
+  .checklist li { display: flex; align-items: flex-start; gap: 9px; font-size: .87rem; }
+  .checklist li > span { flex: 1; min-width: 0; }
+  .checklist li::before {
+    content: '';
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--red);
+    flex-shrink: 0; margin-top: 2px;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 8l3.5 3.5L13 4' stroke='%23fff' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-size: 13px; background-position: center; background-repeat: no-repeat;
+  }
+
+  /* VIDEO AREA — optimized for mobile playback */
+  .step-video {
+    padding: 14px 14px 0;
+    background: var(--gray-100);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 8px;
+    order: 1;
+  }
+  .video-label {
+    font-size: .7rem; color: var(--gray-500); font-weight: 600;
+    letter-spacing: .4px; text-transform: uppercase;
+    padding: 0 2px;
+    align-self: flex-start;
+  }
+  .video-wrap {
+    position: relative;
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 4px 14px rgba(0,0,0,.18);
+  }
+  /* Base rule: only used as a fallback for videos that don't carry their own
+     inline style (passos 1, 2, 3, 5's player area). Videos with an explicit
+     inline style (e.g. passo 4/5's original width:1000px) keep that size on
+     desktop untouched — the mobile-only override below is what fixes them
+     on small screens, scoped to a max-width media query so it never
+     touches desktop. */
+  .step-video video {
+    width: 100%;
+    border-radius: 12px;
+    background: #000;
+    display: block;
+    box-shadow: 0 4px 14px rgba(0,0,0,.18);
+  }
+  /* Lightweight "tap to play" overlay: videos start paused on mobile to save data/battery,
+     and only autoplay (muted) once scrolled into view via IntersectionObserver */
+  .video-wrap .play-overlay {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,.15);
+    opacity: 0; pointer-events: none;
+    transition: opacity .2s;
+  }
+  .video-wrap.paused .play-overlay { opacity: 1; pointer-events: auto; }
+  .play-overlay .play-btn {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: rgba(255,255,255,.92);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,.3);
+  }
+  .play-overlay .play-btn svg { width: 22px; height: 22px; fill: var(--red); margin-left: 3px; }
+
+  /* Fallback when video file is missing */
+  .video-missing {
+    width: 100%;
+    background: var(--white);
+    border: 2px dashed var(--red-mid);
+    border-radius: 12px;
+    padding: 28px 18px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 8px; text-align: center;
+  }
+  .video-missing .play-icon {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--red-mid);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .video-missing strong { font-size: .88rem; color: var(--gray-800); }
+  .video-missing p { font-size: .76rem; color: var(--gray-500); line-height: 1.5; }
+
+  .step-video-spacer { height: 16px; }
+
+  /* FINAL BANNER */
+  .final-banner {
+    background: linear-gradient(135deg, var(--red) 0%, var(--red-dark) 100%);
+    border-radius: 16px; padding: 36px 20px;
+    text-align: center; margin-top: 32px;
+    position: relative; overflow: hidden;
+  }
+  .final-banner::after {
+    content: '✓'; position: absolute;
+    right: 14px; top: 50%; transform: translateY(-50%);
+    font-size: 5rem; color: rgba(255,255,255,.06); line-height: 1;
+  }
+  .final-banner h2 { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800; color: var(--white); margin-bottom: 8px; position: relative; }
+  .final-banner p { color: rgba(255,255,255,.85); font-size: .88rem; max-width: 320px; margin-inline: auto; position: relative; }
+  .final-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--white); color: var(--red);
+    font-weight: 700; font-size: .9rem;
+    padding: 13px 24px; border-radius: 100px; text-decoration: none;
+    margin-top: 22px; position: relative;
+    box-shadow: 0 4px 16px rgba(0,0,0,.2);
+    width: 100%; max-width: 280px; justify-content: center;
+  }
+
+  /* FOOTER */
+  footer { background: var(--red); color: rgba(255,255,255,.92); text-align: center; font-size: .72rem; padding: 22px 18px; line-height: 1.6; }
+
+  /* Mobile-only video cap. This is the ONLY place that overrides a video's
+     inline style (e.g. the original style="width:1000px; max-width:5000px;
+     object-fit:cover; margin:-15px auto 0;" on passo4/passo5). Scoped to
+     max-width so phones get a sane, contained video while desktop keeps
+     the exact original inline sizing untouched. */
+  @media (max-width: 768px) {
+    .video-wrap { max-width: 280px; margin-inline: auto; }
+    .step-video video {
+      width: 100% !important;
+      max-width: 100% !important;
+      height: auto !important;
+      max-height: 42vh !important;
+      aspect-ratio: 16 / 9 !important;
+      object-fit: contain !important;
+      margin: 0 !important;
+    }
+    .step-video video.portrait-video {
+      width: auto !important;
+      max-width: 100% !important;
+      max-height: 60vh !important;
+    }
+    .video-wrap.portrait-video { max-width: 220px !important; }
+  }
+
+  /* Tablet and up — restore side-by-side layout */
+  @media (min-width: 640px) {
+    main { max-width: 600px; padding: 48px 24px 64px; }
+    .step-video { order: 1; }
+    .step-text { order: 2; }
+  }
+
+  @media (min-width: 769px) {
+    :root { --header-h: 70px; }
+    header { padding: 0 40px; }
+    .logo img { height: 38px; }
+    .logo-text { font-size: 1.3rem; }
+    .nav-toggle { display: none; }
+    nav {
+      position: static; flex-direction: row; gap: 28px;
+      box-shadow: none; opacity: 1; visibility: visible; transform: none;
+      padding: 0; background: transparent; width: auto;
+    }
+    nav a { padding: 0; border-bottom: none; color: rgba(0,0,0,.7); font-size: .875rem; }
+    nav a .nav-num { display: none; }
+    .nav-backdrop { display: none; }
+    main { max-width: 1100px; padding: 64px 24px 80px; }
+    .hero { padding: 72px 40px 80px; }
+    .hero h1 { font-size: clamp(2rem, 5vw, 3.2rem); max-width: 700px; }
+    .hero p { font-size: 1.05rem; max-width: 560px; }
+    .steps-overview { justify-content: center; flex-wrap: wrap; overflow: visible; }
+    .progress-bar { justify-content: center; overflow: visible; }
+    .prog-connector { width: 60px; }
+    .step-body:not(.stacked) { flex-direction: row; }
+    .step-body.stacked { flex-direction: column; }
+    .step-body.stacked .step-text { order: 1; border-right: none; border-bottom: 1.5px solid var(--red-light); }
+    .step-body.stacked .step-video { order: 2; padding: 28px 32px 32px; overflow-x: auto; }
+    /* The wrap normally clips with overflow:hidden for rounded corners, but
+       passo 4/5's video keeps its original fixed width:1000px — let it
+       render at full size like the original markup instead of cropping it. */
+    .step-body.stacked .video-wrap { width: auto; max-width: none; overflow: visible; background: transparent; box-shadow: none; }
+    .step-text { flex: 1; border-right: 1.5px solid var(--red-light); padding: 32px 36px; }
+    .step-video { flex: 1; order: 2; padding: 28px 32px; align-items: stretch; }
+    .final-banner { padding: 52px 40px; }
+    .final-btn, .hero-cta { width: auto; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <img src="logo.png" alt="Logo Hiper Farma">
+    <span class="logo-text">Hiper<span> </span>Farma</span>
+  </div>
+  <button class="nav-toggle" id="navToggle" aria-label="Abrir menu de passos" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+  </button>
+  <nav id="navMenu">
+    <a href="#passo1"><span class="nav-num">1</span>Passo 1 — Acesso ao sistema</a>
+    <a href="#passo2"><span class="nav-num">2</span>Passo 2 — Login</a>
+    <a href="#passo3"><span class="nav-num">3</span>Passo 3 — Verificação de CNPJ</a>
+    <a href="#passo4"><span class="nav-num">4</span>Passo 4 — Realizar pedido</a>
+    <a href="#passo5"><span class="nav-num">5</span>Passo 5 — Confirmar pedido</a>
+  </nav>
+</header>
+<div class="nav-backdrop" id="navBackdrop"></div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">Tutorial Operacional</div>
+  <h1>Sistema de Suprimentos<br>CorporativoSupply</h1>
+  <p>Guia passo a passo para realizar seus pedidos de itens de suprimentos — sabão, sacolas e muito mais — diretamente pela plataforma.</p>
+  <a href="#passo1" class="hero-cta">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v14M1 8l7 7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Começar tutorial
+  </a>
+  <div class="steps-overview">
+    <div class="step-pill"><span class="num">1</span> Acesso ao sistema</div>
+    <div class="step-pill"><span class="num">2</span> Login</div>
+    <div class="step-pill"><span class="num">3</span> Verificação de CNPJ</div>
+    <div class="step-pill"><span class="num">4</span> Fazer o pedido</div>
+    <div class="step-pill"><span class="num">5</span> Confirmar o pedido</div>
+  </div>
+</section>
+
+<!-- MAIN -->
+<main>
+  <div class="section-label">Como funciona</div>
+  <h2 class="section-title">5 passos para realizar seu pedido</h2>
+
+  <!-- PROGRESS -->
+  <div class="progress-bar">
+    <div class="prog-step">
+      <div class="prog-dot">1</div>
+      <div class="prog-label">Acessar o site</div>
+    </div>
+    <div class="prog-connector"><div class="prog-line"></div></div>
+    <div class="prog-step">
+      <div class="prog-dot">2</div>
+      <div class="prog-label">Fazer login</div>
+    </div>
+    <div class="prog-connector"><div class="prog-line"></div></div>
+    <div class="prog-step">
+      <div class="prog-dot">3</div>
+      <div class="prog-label">Verificar CNPJ</div>
+    </div>
+    <div class="prog-connector"><div class="prog-line"></div></div>
+    <div class="prog-step">
+      <div class="prog-dot">4</div>
+      <div class="prog-label">Realizar pedido</div>
+    </div>
+    <div class="prog-connector"><div class="prog-line"></div></div>
+    <div class="prog-step">
+      <div class="prog-dot">5</div>
+      <div class="prog-label">Confirmar pedido</div>
+    </div>
+  </div>
+
+  <!-- PASSO 1 -->
+  <div class="step-card" id="passo1">
+    <div class="step-header">
+      <div class="step-number">1</div>
+      <div>
+        <div class="step-title">Acesso ao Sistema</div>
+        <div class="step-subtitle">Entrando na plataforma CorporativoSupply</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="step-video">
+        <span class="video-label">Vídeo demonstrativo</span>
+        <div class="video-wrap" data-video-wrap>
+          <video data-lazy-video preload="metadata" muted loop playsinline tabindex="0">
+            <source src="videos/passo1.mp4" type="video/mp4">
+            Seu navegador não suporta o elemento de vídeo.
+          </video>
+          <div class="play-overlay" data-play-overlay>
+            <div class="play-btn"><svg viewBox="0 0 16 16"><path d="M3 1.5v13l11-6.5z"/></svg></div>
+          </div>
+        </div>
+      </div>
+      <div class="step-text">
+        <p>Para iniciar seu processo de compra, acesse o portal oficial de suprimentos corporativos da rede Hiper.Farma.</p>
+        <p>No navegador de sua preferência, acesse o endereço abaixo e localize o botão <strong>"Acesso"</strong> na página inicial. Ao clicar nele, você será automaticamente redirecionado para a área de login do sistema.</p>
+        <a href="https://www.corporativosupply.com.br/" target="_blank" class="step-link">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12M7 1l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Acessar o portal
+        </a>
+        <div class="tip-box">
+          <strong>💡 Dica:</strong> Salve o endereço nos favoritos do navegador para facilitar o acesso nas próximas compras.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASSO 2 -->
+  <div class="step-card" id="passo2">
+    <div class="step-header">
+      <div class="step-number">2</div>
+      <div>
+        <div class="step-title">Login na Plataforma</div>
+        <div class="step-subtitle">Inserindo suas credenciais de acesso</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="step-video">
+        <span class="video-label">Vídeo demonstrativo</span>
+        <div class="video-wrap" data-video-wrap>
+          <video data-lazy-video preload="metadata" muted loop playsinline tabindex="0">
+            <source src="videos/passo2.mp4" type="video/mp4">
+            Seu navegador não suporta o elemento de vídeo.
+          </video>
+          <div class="play-overlay" data-play-overlay>
+            <div class="play-btn"><svg viewBox="0 0 16 16"><path d="M3 1.5v13l11-6.5z"/></svg></div>
+          </div>
+        </div>
+      </div>
+      <div class="step-text">
+        <p>Na tela de login, preencha os campos com as credenciais que foram enviadas para sua loja:</p>
+        <ul class="checklist">
+          <li><span>No campo <strong>Usuário</strong>, insira o e-mail padrão fornecido pela equipe de suprimentos.</span></li>
+          <li><span>No campo <strong>Senha</strong>, insira a senha que foi enviada junto com o e-mail de acesso.</span></li>
+        </ul>
+        <div class="tip-box">
+          <strong>⚠️ Atenção:</strong> As credenciais são exclusivas de cada loja. Não compartilhe seu acesso com outras unidades da rede.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASSO 3 -->
+  <div class="step-card" id="passo3">
+    <div class="step-header">
+      <div class="step-number">3</div>
+      <div>
+        <div class="step-title">Verificação do CNPJ</div>
+        <div class="step-subtitle">Confirmando que você está na conta correta</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="step-video">
+        <span class="video-label">Vídeo demonstrativo</span>
+        <div class="video-wrap" data-video-wrap>
+          <video data-lazy-video preload="metadata" muted playsinline tabindex="0">
+            <source src="videos/passo3.mp4" type="video/mp4">
+            Seu navegador não suporta o elemento de vídeo.
+          </video>
+          <div class="play-overlay" data-play-overlay>
+            <div class="play-btn"><svg viewBox="0 0 16 16"><path d="M3 1.5v13l11-6.5z"/></svg></div>
+          </div>
+        </div>
+      </div>
+      <div class="step-text">
+        <p>Antes de iniciar qualquer pedido, é fundamental verificar se o CNPJ exibido na plataforma corresponde ao CNPJ da sua loja.</p>
+        <p>Essa conferência garante que os produtos sejam faturados e entregues corretamente para a sua unidade. Caso o CNPJ seja diferente do esperado, <strong>não realize nenhum pedido</strong> e entre em contato com o setor responsável.</p>
+        <ul class="checklist">
+          <li><span>Localize o CNPJ exibido na tela após o login.</span></li>
+          <li><span>Compare com o CNPJ registrado da sua loja.</span></li>
+          <li><span>Estando correto, você pode prosseguir com o pedido com segurança.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASSO 4 -->
+  <div class="step-card" id="passo4">
+    <div class="step-header">
+      <div class="step-number">4</div>
+      <div>
+        <div class="step-title">Realizando o Pedido</div>
+        <div class="step-subtitle">Selecionando produtos e finalizando a compra</div>
+      </div>
+    </div>
+    <div class="step-body stacked">
+      <div class="step-video">
+        <span class="video-label">Vídeo demonstrativo</span>
+        <div class="video-wrap" data-video-wrap>
+          <video id="video-passo4" data-lazy-video preload="metadata" muted loop playsinline tabindex="0" style="width:1000px; max-width:5000px; object-fit:cover; margin:-15px auto 0;">
+            <source src="videos/passo4.mp4" type="video/mp4">
+            Seu navegador não suporta o elemento de vídeo.
+          </video>
+          <div class="play-overlay" data-play-overlay>
+            <div class="play-btn"><svg viewBox="0 0 16 16"><path d="M3 1.5v13l11-6.5z"/></svg></div>
+          </div>
+        </div>
+      </div>
+      <div class="step-text">
+        <p>Com o acesso confirmado, você será direcionado automaticamente para o <strong>catálogo de produtos</strong>. A partir daqui, o processo é simples e intuitivo:</p>
+        <ul class="checklist">
+          <li><span>Navegue pelo catálogo e localize os itens que deseja solicitar (sabão, sacolas, produtos de limpeza, etc.).</span></li>
+          <li><span>Defina a <strong>quantidade desejada</strong> de cada item e clique no ícone do carrinho para adicioná-lo.</span></li>
+          <li><span>Clique em <strong>"Continuar Comprando"</strong> para voltar ao catálogo e adicionar mais produtos ao pedido.</span></li>
+          <li><span>Repita o processo até selecionar todos os itens necessários para a sua loja.</span></li>
+          <li><span>Ao finalizar a seleção, revise o carrinho e <strong>confirme o pedido</strong>.</span></li>
+        </ul>
+        <div class="tip-box" style="border-left-color:#ffde21; background:#fffbe6; color:#5c4d00;">
+          <strong>⚠️ ATENÇÃO:</strong> Caso altere a quantidade de algum item no carrinho, pressione o botão <strong>Recalcular</strong> para os novos valores serem salvos no carrinho.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASSO 5 -->
+  <div class="step-card" id="passo5">
+    <div class="step-header">
+      <div class="step-number">5</div>
+      <div>
+        <div class="step-title">Confirmação do pedido</div>
+        <div class="step-subtitle">Confirmando que seu pedido está correto</div>
+      </div>
+    </div>
+    <div class="step-body stacked">
+      <div class="step-video">
+        <span class="video-label">Vídeo demonstrativo</span>
+        <div class="video-wrap" data-video-wrap>
+          <video data-lazy-video preload="metadata" muted loop playsinline tabindex="0" style="width:1000px; max-width:5000px; object-fit:cover; margin:0 auto;">
+            <source src="videos/passo5.mp4" type="video/mp4">
+            Seu navegador não suporta o elemento de vídeo.
+          </video>
+          <div class="play-overlay" data-play-overlay>
+            <div class="play-btn"><svg viewBox="0 0 16 16"><path d="M3 1.5v13l11-6.5z"/></svg></div>
+          </div>
+        </div>
+      </div>
+      <div class="step-text">
+        <p>Após montar todo seu carrinho, verificar valores e itens, basta finalizar o pedido clicando em confirmar pedido.</p>
+        <p>Quando o pedido for confirmado ele irá gerar um número de pedido, esse número é a confirmação que seu pedido foi realizado com sucesso.</p>
+        <p>Na forma de pagamento deve estar "Boleto", sendo assim não altere.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="final-banner">
+    <h2>Pronto para fazer seu primeiro pedido?</h2>
+    <p>Agora que você conhece o processo, acesse a plataforma e mantenha sua loja sempre abastecida.</p>
+    <a href="https://www.corporativosupply.com.br/" target="_blank" class="final-btn">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v14M1 8l7 7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Acessar o sistema agora
+    </a>
+  </div>
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <p style="text-transform: uppercase;">Privacidade: este documento contém informações de uso exclusivo na Hiper Farma Ltda. Circulação restrita. Proibida reprodução, distribuição ou transmissão sem autorização.</p>
+  <br>
+  <p>Hiper Farma · Setor de Suprimentos</p>
+</footer>
+
+<script>
+  (function () {
+    /* Header hide-on-scroll */
+    var header = document.querySelector('header');
+    var lastY = 0;
+    window.addEventListener('scroll', function () {
+      var current = window.pageYOffset || document.documentElement.scrollTop;
+      if (current <= 0) {
+        header.classList.remove('header-hidden');
+      } else if (current > lastY) {
+        header.classList.add('header-hidden');
+        closeNav();
+      } else {
+        header.classList.remove('header-hidden');
+      }
+      lastY = current;
+    }, { passive: true });
+
+    /* Mobile nav menu */
+    var toggle = document.getElementById('navToggle');
+    var menu = document.getElementById('navMenu');
+    var backdrop = document.getElementById('navBackdrop');
+
+    function openNav() {
+      menu.classList.add('nav-open');
+      backdrop.classList.add('show');
+      toggle.setAttribute('aria-expanded', 'true');
+    }
+    function closeNav() {
+      menu.classList.remove('nav-open');
+      backdrop.classList.remove('show');
+      toggle.setAttribute('aria-expanded', 'false');
+    }
+    toggle.addEventListener('click', function () {
+      menu.classList.contains('nav-open') ? closeNav() : openNav();
+    });
+    backdrop.addEventListener('click', closeNav);
+    menu.querySelectorAll('a').forEach(function (a) {
+      a.addEventListener('click', closeNav);
+    });
+
+    /* Detect portrait (phone screen recording) videos and flag them with a
+       class. The actual sizing for that class lives ONLY inside the
+       max-width:768px media query above, so this never touches anything
+       on desktop — videos that carry their own inline style (passo 4 and
+       5's original width:1000px) are never modified by this script. */
+    document.querySelectorAll('[data-lazy-video]').forEach(function (video) {
+      function flagPortrait() {
+        if (video.videoWidth && video.videoHeight && video.videoHeight > video.videoWidth) {
+          video.classList.add('portrait-video');
+          video.closest('[data-video-wrap]').classList.add('portrait-video');
+        }
+      }
+      if (video.readyState >= 1) flagPortrait();
+      video.addEventListener('loadedmetadata', flagPortrait);
+    });
+
+    /* Passo 4 video at half speed, as in original */
+    var videoPasso4 = document.getElementById('video-passo4');
+    if (videoPasso4) {
+      var setRate = function () { videoPasso4.playbackRate = 0.5; };
+      setRate();
+      videoPasso4.addEventListener('loadedmetadata', setRate);
+    }
+
+    /* ---------------------------------------------------------------
+       MOBILE VIDEO STRATEGY
+       The original page autoplays all 5 videos at once on load.
+       On mobile that means up to 5 simultaneous video streams
+       downloading and decoding — heavy on data and battery, and a
+       common cause of jank/freezing on phones.
+
+       Here: every video starts paused. Only the video belonging to
+       the step card currently centered in the viewport is allowed to
+       autoplay (muted, so autoplay is permitted by mobile browsers).
+       Any video that scrolls out of view is paused. A tap on a paused
+       video's overlay always plays it manually (and unmutes nothing,
+       to stay consistent — controls are still native, so the user
+       can unmute via the player itself).
+    ----------------------------------------------------------------*/
+    var videos = Array.prototype.slice.call(document.querySelectorAll('[data-lazy-video]'));
+
+    videos.forEach(function (video) {
+      video.removeAttribute('autoplay');
+      var wrap = video.closest('[data-video-wrap]');
+      var overlay = wrap.querySelector('[data-play-overlay]');
+
+      function showPaused() { wrap.classList.add('paused'); }
+      function hidePaused() { wrap.classList.remove('paused'); }
+
+      video.addEventListener('pause', showPaused);
+      video.addEventListener('play', hidePaused);
+      showPaused();
+
+      overlay.addEventListener('click', function () {
+        video.play().catch(function () {});
+      });
+    });
+
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          var video = entry.target;
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.55) {
+            video.muted = true;
+            video.play().catch(function () {});
+          } else {
+            if (!video.paused) video.pause();
+          }
+        });
+      }, { threshold: [0, 0.55, 1] });
+
+      videos.forEach(function (v) { io.observe(v); });
+    } else {
+      /* Fallback: no IntersectionObserver support — leave videos
+         tap-to-play only, do not autoplay anything. */
+    }
+  })();
+</script>
+
+</body>
+</html>
